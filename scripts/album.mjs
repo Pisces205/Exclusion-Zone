@@ -1,7 +1,7 @@
 /**
  * 专辑录入 / 轮换脚本（蓝巨星「专辑展示」板块的数据入口）：
  *
- *   node scripts/album.mjs "梁博 精气神" --ncm      → 网易云数据源（NCM_API=http://localhost:5173/api 走本地 dev；线上用 https://rainburst.cc/api）
+ *   node scripts/album.mjs "梁博 精气神" --ncm      → 网易云数据源（NCM_API=http://localhost:5173/api 走本地 dev；线上用 https://exclusion-zone.pages.dev/api）
  *   node scripts/album.mjs "声音玩具 劳动之余" --ncm --pin  → 写入第三张卡（固定推荐，不参与轮换）
  *   node scripts/album.mjs "some album"             → iTunes 数据源（仅展示元数据，不可播）
  *   node scripts/album.mjs --checklist              → 查看各专辑接入状态
@@ -58,7 +58,7 @@ if (!term) {
   process.exit(1);
 }
 if (flags.ncm && !API) {
-  console.error("缺 API 地址：先 npm run dev，然后 NCM_API=http://localhost:5173/api npm run album -- \"歌手 专辑名\" --ncm；线上用 https://rainburst.cc/api");
+  console.error("缺 API 地址：先 npm run dev，然后 NCM_API=http://localhost:5173/api npm run album -- \"歌手 专辑名\" --ncm；线上用 https://exclusion-zone.pages.dev/api");
   process.exit(1);
 }
 

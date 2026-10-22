@@ -2,7 +2,7 @@
 
 > 一个把整个个人网站做成可交互黑洞的尝试：移动鼠标，你将成为一个大质量黑洞。
 
-**在线地址：** <https://rainburst.cc>
+**在线地址：** <https://exclusion-zone.pages.dev>
 
 ![首页 · 一片被鼠标压弯的宇宙](./docs/screenshot-hero.png)
 
@@ -34,7 +34,7 @@
 
 - **零依赖 PDF 阅读器** — 「文字」不把文档转成图片，也不接第三方阅读服务：卡片只保存标题与元数据，点开时才挂载同源 `<iframe>` 加载 [`public/文字/`](./public/文字/) 下的 PDF；桌面用浏览器原生阅读器，触屏设备直接在新窗口交给系统。Esc 关闭、焦点归还和背景滚动锁都在同一个组件里处理。
 
-- **音乐接口与站点同源** — 「音乐」的专辑播放不再依赖另行部署的服务器：[`server/ncm.ts`](./server/ncm.ts) 只代理站内用到的 12 个网易云接口，线上由 [`functions/api/[[path]].ts`](./functions/api/%5B%5Bpath%5D%5D.ts)（Cloudflare Pages Function）挂在 `rainburst.cc/api`，本地由 Vite 中间件提供同一份 handler；没有 CORS、没有额外域名，`npm run dev` 就能扫码登录。
+- **音乐接口与站点同源** — 「音乐」的专辑播放不再依赖另行部署的服务器：[`server/ncm.ts`](./server/ncm.ts) 只代理站内用到的 12 个网易云接口，线上由 [`functions/api/[[path]].ts`](./functions/api/%5B%5Bpath%5D%5D.ts)（Cloudflare Pages Function）挂在 `exclusion-zone.pages.dev/api`，本地由 Vite 中间件提供同一份 handler；没有 CORS、没有额外域名，`npm run dev` 就能扫码登录。
 
 - **CPU 参考实现做测试** — [`selftest/bh-shader.mjs`](./selftest/bh-shader.mjs) 是那段 GLSL 逐行移植出来的零依赖 JavaScript 版本，配套 7 个自检脚本，直接 `node` 就能跑，**不需要浏览器**，用来做无回归出图和采样质量分析。
 
@@ -139,7 +139,26 @@ selftest/                  # CPU 着色器参考实现 + 零依赖自检脚本
 
 ## 部署
 
-GitHub 推送到 `main` → Cloudflare Pages 自动构建（Build command `npm run build`，输出目录 `dist`）→ 自定义域名 <https://rainburst.cc>。
+站点跑在 Cloudflare Pages 上一个名为 `exclusion-zone` 的 **Direct Upload** 项目里，线上地址 <https://exclusion-zone.pages.dev>。发布就是一条命令：
+
+```bash
+npm run deploy   # = npm run build && npx wrangler pages deploy dist --project-name exclusion-zone --branch main
+```
+
+首次在别的机器上发布要先授权一次：
+
+```bash
+npx wrangler login            # 默认起 localhost:8976 回调，浏览器里点「允许」
+npx wrangler login --device   # 回调被挡（沙箱 / 远程 / 代理）时改用设备码，5 分钟内到
+                              # https://dash.cloudflare.com/oauth2/device/verify 输码批准
+```
+
+两点必须记住，它们和「push 就上线」的直觉相反：
+
+- **`git push` 不会更新线上站点。** 这个项目是 Direct Upload，内容由本机 `npm run deploy` 端上去，和仓库的 Git 状态无关——改完不跑 `npm run deploy`，线上就是旧的。
+- **`functions/` 由 `wrangler pages deploy` 一起上传**（它以 `process.cwd()/functions` 为准，所以必须在仓库根目录执行），所以 `/api/*` 照常生效，不需要 Git 构建。
+
+> 若之后要换成「push 自动构建」，只能新建一个 Git 连接的项目，Direct Upload 项目不能就地改造。
 
 ## 专辑播放（网易云）
 
@@ -149,7 +168,7 @@ GitHub 推送到 `main` → Cloudflare Pages 自动构建（Build command `npm r
 
 | 环境 | 入口 | 实现 |
 | --- | --- | --- |
-| 线上 | `https://rainburst.cc/api/*` | `functions/api/[[path]].ts`（Cloudflare Pages Function） |
+| 线上 | `https://exclusion-zone.pages.dev/api/*` | `functions/api/[[path]].ts`（Cloudflare Pages Function） |
 | 本地 | `http://localhost:5173/api/*` | `server/vite-plugin-ncm.ts`（Vite 中间件） |
 | 共用逻辑 | — | `server/ncm.ts`，只代理站内用到的 12 个网易云接口 |
 
@@ -159,16 +178,16 @@ cookie 由访客浏览器自己保存（`localStorage`），同源代理下每�
 
 ### 上线
 
-1. 把 `functions/`、`server/`、`src/netease/config.ts` 等改动提交并 push 到 `main`；
-2. Cloudflare Pages 构建时会把 `functions/` 一起发布（**项目必须由 Git 构建**；Direct Upload 不会带 Functions）；
-3. 打开 <https://rainburst.cc/api/login/qr/key>，返回 `{"code":200,"unikey":"…"}` 就说明接口已上线；
+1. 改完代码在仓库根目录跑 `npm run deploy`；
+2. `wrangler pages deploy` 会把根目录的 `functions/` 一起编译上传——部署日志里出现 `Compiled Worker successfully` 与 `Uploading Functions bundle` 就是带上了。Direct Upload 项目**同样**带 Functions，和 Git 构建的项目在这一点上没有区别（2026-10-23 实测）；
+3. 打开 <https://exclusion-zone.pages.dev/api/login/qr/key>，返回 `{"code":200,"unikey":"…"}` 就说明接口已上线；
 4. 进入「音乐」→ 打开专辑 → 扫码登录，登录成功后会自动续播。
 
-> 若第 3 步返回的**不是 JSON**，注意典型表现不是 404，而是 **HTTP 200 + `Content-Type: text/html`**——正文就是站点首页那份 `index.html`（`/api/*` 落回了静态资源兜底），因为 Pages 在没有 Function 接管时会照常把页面发出来。判据：`curl -sI https://rainburst.cc/api/login/qr/key | grep -i content-type`，是 `application/json` 才对。出现 `text/html` 就检查：Pages 项目是不是**由 Git 构建**（Direct Upload 的项目永远不带 Functions）、`functions/api/[[path]].ts` 是否在仓库里；也可以在 Cloudflare 控制台用 `wrangler pages deployment tail` 看函数日志。
+> 若第 3 步返回的**不是 JSON**，注意典型表现不是 404，而是 **HTTP 200 + `Content-Type: text/html`**——正文就是站点首页那份 `index.html`（`/api/*` 落回了静态资源兜底），因为 Pages 在没有 Function 接管时会照常把页面发出来。判据：`curl -sI https://exclusion-zone.pages.dev/api/login/qr/key | grep -i content-type`，是 `application/json` 才对。出现 `text/html` 就检查：这次部署有没有带上 Functions——`functions/api/[[path]].ts` 是否在仓库里、部署日志里有没有 `Uploading Functions bundle`；也可以在 Cloudflare 控制台用 `wrangler pages deployment tail` 看函数日志。
 >
 > 扫码 key 有较紧的 IP 限流：短时间内反复打开登录框可能拿到 `code: 406`「操作频繁」，弹窗会如实提示并给出「重试」，等一两分钟即可。代理不缓存、不共享 unikey——每个访客拿自己的 key，避免扫码串号。
 >
-> 部署后也可以验证新增的歌单路由：`curl -s 'https://rainburst.cc/api/user/playlist?uid=1'` 未登录应返回 `{"code":301,...}`；返回 404 **或一段 HTML**（首页兜底）都说明这次提交没有带上 `server/ncm.ts` 的新路由。
+> 部署后也可以验证新增的歌单路由：`curl -s 'https://exclusion-zone.pages.dev/api/user/playlist?uid=1'` 未登录应返回 `{"code":301,...}`；返回 404 **或一段 HTML**（首页兜底）都说明这次部署没有带上 `server/ncm.ts` 的新路由。
 
 ### 本地
 
@@ -200,7 +219,7 @@ localStorage.setItem("rainburst.ncm-base", "https://ncm.example.com");
 # 本地：先 npm run dev，再另开一个终端
 NCM_API=http://localhost:5173/api npm run album -- "梁博 精气神" --ncm
 # 线上已部署后也可以直接用
-NCM_API=https://rainburst.cc/api npm run album -- "声音玩具 劳动之余" --ncm --pin
+NCM_API=https://exclusion-zone.pages.dev/api npm run album -- "声音玩具 劳动之余" --ncm --pin
 # 查看各专辑接入状态
 npm run album -- --checklist
 ```
