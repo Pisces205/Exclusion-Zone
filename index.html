@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#030304" />
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./site.webmanifest" />
+    <meta
+      name="description"
+      content="个人网站 · 世界毁灭前梦栖息的地方。移动鼠标，你将成为一个大质量黑洞。"
+    />
+    <title>深空禁区 · 世界毁灭前梦栖息的地方</title>
+    <script>
+      /* 站点样式依赖 Tailwind 4 的 CSS 级联层与 color-mix()（Chrome 111+）。
+         旧版 Chromium 会丢掉整层工具类，只剩未分层的基础样式；这里给出一句明确提示，
+         以免访客把“样式没加载”误判成站点坏了。脚本保持 ES5，旧浏览器也能执行。 */
+      (function () {
+        var modern = false;
+        try {
+          modern =
+            !!window.CSS &&
+            typeof CSS.supports === "function" &&
+            CSS.supports("color", "color-mix(in oklab, red, blue)") &&
+            CSS.supports("color", "oklch(50% 0.1 200)");
+        } catch (e) {}
+        if (modern) return;
+
+        function show() {
+          if (document.getElementById("legacy-browser-notice")) return;
+          var wrap = document.createElement("div");
+          wrap.id = "legacy-browser-notice";
+          wrap.setAttribute("role", "alert");
+          wrap.style.cssText =
+            "position:fixed;left:0;right:0;bottom:0;z-index:2147483647;" +
+            "display:flex;align-items:flex-start;gap:12px;padding:14px 18px;" +
+            "background:#14110d;color:#f2ecdf;border-top:1px solid rgba(255,255,255,.16);" +
+            "box-shadow:0 -12px 40px rgba(0,0,0,.55);" +
+            "font:14px/1.65 -apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif;";
+          var text = document.createElement("div");
+          text.style.cssText = "flex:1 1 auto;min-width:0";
+          text.innerHTML =
+            "当前浏览器版本过旧，页面样式无法完整显示。" +
+            "如果这是 Chrome，请在地址栏输入 <span style=\"color:#ffd48a;white-space:nowrap\">chrome://restart</span> 并回车" +
+            "（会自动重启并恢复标签页，已下载的更新随即生效），" +
+            "或访问 <span style=\"color:#ffd48a;white-space:nowrap\">chrome://settings/help</span> 检查更新；" +
+            "其他浏览器请更新到最新版本。";
+          var close = document.createElement("button");
+          close.type = "button";
+          close.setAttribute("aria-label", "关闭提示");
+          close.textContent = "×";
+          close.style.cssText =
+            "flex:0 0 auto;border:0;background:transparent;color:#f2ecdf;font-size:22px;" +
+            "line-height:1;padding:0 2px;cursor:pointer;opacity:.7";
+          close.onclick = function () {
+            if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+          };
+          wrap.appendChild(text);
+          wrap.appendChild(close);
+          document.body.appendChild(wrap);
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", show);
+        } else {
+          show();
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500&family=Noto+Sans+SC:wght@100;200;300;400&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

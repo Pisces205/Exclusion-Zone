@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-selftest/
+
+# Test renders (rebuild with selftest/render-blackhole.mjs)
+selftest/*.png
+
+# Local tool state
+.zcode/
+.wrangler/
+
+# One-off conversion tools / source backups (not part of the site)
+ffmpeg-tmp*.exe
+/backup/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 原始影像素材（相机原片，不入库；转码产物在 public/影像/）
+/影像/
