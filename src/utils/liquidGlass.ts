@@ -1,6 +1,10 @@
 /**
  * 液态玻璃：圆角矩形 SDF 位移贴图 + SVG feDisplacementMap 滤镜。
- * 从 https://github.com/shuding/liquid-glass 核心算法移植（MIT License）。
+ *
+ * 从 https://github.com/shuding/liquid-glass 的核心算法移植，该上游以 MIT 许可发布
+ * （Copyright (c) 2025 Shu Ding）。按 MIT 的要求保留其版权与许可声明：源码内的声明在这里
+ * 与仓库根目录的 THIRD_PARTY_NOTICES.md，随构建产物分发的那份写在 index.html 的 HTML 注释里
+ * （模块头注释会被 minifier 剥掉，实测 esbuild 不会为它保留，所以产物里那处不能省）。
  */
 
 export interface LiquidGlassOptions {

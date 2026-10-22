@@ -45,7 +45,7 @@
 ## 快速开始
 
 ```bash
-# 1. 安装依赖（需要 Node ≥ 20）
+# 1. 安装依赖（需要 Node ≥ 20.19）
 npm install
 
 # 2. 本地开发，热更新
@@ -164,11 +164,11 @@ cookie 由访客浏览器自己保存（`localStorage`），同源代理下每�
 3. 打开 <https://rainburst.cc/api/login/qr/key>，返回 `{"code":200,"unikey":"…"}` 就说明接口已上线；
 4. 进入「音乐」→ 打开专辑 → 扫码登录，登录成功后会自动续播。
 
-> 若第 3 步返回 404/500：检查 Pages 项目是否还开着 Functions、`functions/api/[[path]].ts` 是否已提交；也可以在 Cloudflare 控制台用 `wrangler pages deployment tail` 看函数日志。
+> 若第 3 步返回的**不是 JSON**，注意典型表现不是 404，而是 **HTTP 200 + `Content-Type: text/html`**——正文就是站点首页那份 `index.html`（`/api/*` 落回了静态资源兜底），因为 Pages 在没有 Function 接管时会照常把页面发出来。判据：`curl -sI https://rainburst.cc/api/login/qr/key | grep -i content-type`，是 `application/json` 才对。出现 `text/html` 就检查：Pages 项目是不是**由 Git 构建**（Direct Upload 的项目永远不带 Functions）、`functions/api/[[path]].ts` 是否在仓库里；也可以在 Cloudflare 控制台用 `wrangler pages deployment tail` 看函数日志。
 >
 > 扫码 key 有较紧的 IP 限流：短时间内反复打开登录框可能拿到 `code: 406`「操作频繁」，弹窗会如实提示并给出「重试」，等一两分钟即可。代理不缓存、不共享 unikey——每个访客拿自己的 key，避免扫码串号。
 >
-> 部署后也可以验证新增的歌单路由：`curl -s 'https://rainburst.cc/api/user/playlist?uid=1'` 未登录应返回 `{"code":301,...}`，返回 404 说明这次提交没有带上 `server/ncm.ts` 的新路由。
+> 部署后也可以验证新增的歌单路由：`curl -s 'https://rainburst.cc/api/user/playlist?uid=1'` 未登录应返回 `{"code":301,...}`；返回 404 **或一段 HTML**（首页兜底）都说明这次提交没有带上 `server/ncm.ts` 的新路由。
 
 ### 本地
 
@@ -213,4 +213,6 @@ npm run album -- --checklist
 
 ## 版权
 
-© 2026 深空禁区 · 保留所有权利。
+© 2026 深空禁区 · 保留所有权利（**除注明第三方部分外**——`src/utils/liquidGlass.ts` 移植自
+<https://github.com/shuding/liquid-glass>，按 MIT 许可分发，版权与许可全文见
+[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)）。
